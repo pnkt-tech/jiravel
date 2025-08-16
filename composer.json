@@ -1,0 +1,48 @@
+{
+    "name": "pnkt/jiravel",
+    "description": "A comprehensive Laravel package for Jira integration with advanced features",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Abdalla Abdulsayyid",
+            "email": "abdalla@pnkt.at"
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^12.0",
+        "guzzlehttp/guzzle": "^7.0",
+        "illuminate/support": "^12.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0",
+        "phpunit/phpunit": "^11.0",
+        "mockery/mockery": "^1.6"
+    },
+    "autoload": {
+        "psr-4": {
+            "Pnkt\\Jiravel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Pnkt\\Jiravel\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Pnkt\\Jiravel\\JiravelServiceProvider"
+            ],
+            "aliases": {
+                "Jiravel": "Pnkt\\Jiravel\\Facades\\Jiravel"
+            }
+        }
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
