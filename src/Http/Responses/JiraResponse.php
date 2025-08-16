@@ -6,7 +6,7 @@ namespace Pnkt\Jiravel\Http\Responses;
 
 use Pnkt\Jiravel\Contracts\JiraResponseInterface;
 
-abstract readonly class JiraResponse implements JiraResponseInterface
+readonly class JiraResponse implements JiraResponseInterface
 {
     public function __construct(
         protected readonly int $statusCode,
