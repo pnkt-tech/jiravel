@@ -17,7 +17,7 @@ use Pnkt\Jiravel\Exceptions\JiraException;
 use Pnkt\Jiravel\Exceptions\JiraRateLimitException;
 use Pnkt\Jiravel\Exceptions\JiraAuthenticationException;
 use Pnkt\Jiravel\Http\Requests\JiraRequest;
-use Pnkt\Jiravel\Http\Responses\JiraResponse;
+use Pnkt\Jiravel\Http\Responses\BaseJiraResponse;
 
 final readonly class JiraClient implements JiraClientInterface
 {
@@ -64,7 +64,7 @@ final readonly class JiraClient implements JiraClientInterface
         }
     }
 
-    public function send(RequestInterface $request): JiraResponse
+    public function send(RequestInterface $request): BaseJiraResponse
     {
         $this->checkRateLimit();
         $this->logRequest($request);
@@ -172,7 +172,7 @@ final readonly class JiraClient implements JiraClientInterface
         );
     }
 
-    public function get(string $endpoint, array $params = []): JiraResponse
+    public function get(string $endpoint, array $params = []): BaseJiraResponse
     {
         $request = new class($endpoint, $params) extends JiraRequest {
             public function __construct(string $endpoint, array $params)
@@ -184,7 +184,7 @@ final readonly class JiraClient implements JiraClientInterface
         return $this->send($request);
     }
 
-    public function post(string $endpoint, array $data = []): JiraResponse
+    public function post(string $endpoint, array $data = []): BaseJiraResponse
     {
         $request = new class($endpoint, $data) extends JiraRequest {
             public function __construct(string $endpoint, array $data)
@@ -196,7 +196,7 @@ final readonly class JiraClient implements JiraClientInterface
         return $this->send($request);
     }
 
-    public function put(string $endpoint, array $data = []): JiraResponse
+    public function put(string $endpoint, array $data = []): BaseJiraResponse
     {
         $request = new class($endpoint, $data) extends JiraRequest {
             public function __construct(string $endpoint, array $data)
@@ -208,7 +208,7 @@ final readonly class JiraClient implements JiraClientInterface
         return $this->send($request);
     }
 
-    public function delete(string $endpoint): JiraResponse
+    public function delete(string $endpoint): BaseJiraResponse
     {
         $request = new class($endpoint) extends JiraRequest {
             public function __construct(string $endpoint)
@@ -220,7 +220,7 @@ final readonly class JiraClient implements JiraClientInterface
         return $this->send($request);
     }
 
-    public function upload(string $endpoint, string $filePath, string $filename): JiraResponse
+    public function upload(string $endpoint, string $filePath, string $filename): BaseJiraResponse
     {
         $this->logUploadRequest($endpoint, $filename);
 
@@ -236,7 +236,7 @@ final readonly class JiraClient implements JiraClientInterface
             ]);
 
             $data = json_decode($response->getBody()->getContents(), true);
-            $jiraResponse = new class($response->getStatusCode(), $data, $response->getHeaders()) extends JiraResponse {};
+            $jiraResponse = new BaseJiraResponse($response->getStatusCode(), $data, $response->getHeaders());
 
             $this->logUploadResponse($endpoint, $filename, $jiraResponse);
             return $jiraResponse;
@@ -247,7 +247,7 @@ final readonly class JiraClient implements JiraClientInterface
         }
     }
 
-    private function executeRequest(RequestInterface $request): JiraResponse
+    private function executeRequest(RequestInterface $request): BaseJiraResponse
     {
         $options = [
             'query' => $request->getParams(),
@@ -257,13 +257,15 @@ final readonly class JiraClient implements JiraClientInterface
             $options['json'] = $request->getData();
         }
 
+        // dd($options);
         $response = $this->client->request(
             $request->getMethod(),
             $request->getEndpoint(),
             $options
         );
+        
 
-        return new JiraResponse(
+        return new BaseJiraResponse(
             $response->getStatusCode(),
             json_decode($response->getBody()->getContents(), true) ?? [],
             $response->getHeaders()
@@ -280,7 +282,7 @@ final readonly class JiraClient implements JiraClientInterface
         ]);
     }
 
-    private function logResponse(RequestInterface $request, JiraResponse $response): void
+    private function logResponse(RequestInterface $request, BaseJiraResponse $response): void
     {
         Log::channel('jiravel')->info('Jira API Response', [
             'method' => $request->getMethod(),
@@ -327,7 +329,7 @@ final readonly class JiraClient implements JiraClientInterface
         ]);
     }
 
-    private function logUploadResponse(string $endpoint, string $filename, JiraResponse $response): void
+    private function logUploadResponse(string $endpoint, string $filename, BaseJiraResponse $response): void
     {
         if (!config('jiravel.logging.enabled', true)) {
             return;
@@ -353,4 +355,6 @@ final readonly class JiraClient implements JiraClientInterface
             'error' => $error,
         ]);
     }
+
+
 }
